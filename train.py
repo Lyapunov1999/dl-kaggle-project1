@@ -156,10 +156,17 @@ def main():
             is_best = val_acc > best_acc
             if is_best:
                 best_acc, best_epoch = val_acc, epoch
-                torch.save({
+            if is_best or epoch % 10 == 0:
+                checkpoint_data = {
                     "model": model.state_dict(), "val_acc": val_acc,
                     "params": params, "epoch": epoch, "config": config,
-                }, checkpoint)
+                }
+                if is_best:
+                    torch.save(checkpoint_data, checkpoint)
+                if epoch % 10 == 0:
+                    periodic_checkpoint = run_dir / f"resnet_epoch_{epoch:03d}.pt"
+                    torch.save(checkpoint_data, periodic_checkpoint)
+                    logger.info("Saved epoch %d checkpoint: %s", epoch, periodic_checkpoint)
             metrics = {
                 "epoch": epoch, "lr": lr, "train_loss": train_loss,
                 "train_acc": train_acc, "val_loss": val_loss, "val_acc": val_acc,
