@@ -6,10 +6,12 @@
 
 ```powershell
 python train.py --smoke-test
-python train.py --epochs 10 --batch-size 256 --lr 0.1
+python train.py --epochs 10 --batch-size 256 --lr 0.001
 ```
 
-可以用 `--seed`、`--momentum`、`--weight-decay`、`--workers` 等参数调整实验。完整参数见 `python train.py --help`。
+默认使用 Adam 优化器，学习率为 `0.001`，权重衰减为 `0.0005`，保留余弦退火学习率调度。可以用 `--seed`、`--weight-decay`、`--workers` 等参数调整实验。完整参数见 `python train.py --help`。
+
+模型保留残差结构，每个阶段各含 2 个残差块，通道数为 `(48, 96, 192, 320)`，共有 **4,947,770** 个可训练参数，符合项目不超过 5,000,000 个参数的要求。
 
 ## 每次实验的记录
 

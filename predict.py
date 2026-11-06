@@ -58,7 +58,10 @@ def main():
     # train.py records torch.__version__ in the checkpoint config.
     with torch.serialization.safe_globals([TorchVersion]):
         checkpoint = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
-    model = SmallResNet().to(device)
+    model_config = checkpoint.get("config", {}).get("model", {})
+    # Checkpoints predating architecture metadata use the original smaller model.
+    model = SmallResNet(widths=model_config.get("widths", (32, 64, 128, 256)),
+                        blocks=model_config.get("blocks", (2, 2, 2, 2))).to(device)
     model.load_state_dict(checkpoint["model"])
     model.eval()
     images = TestImages(args.images)

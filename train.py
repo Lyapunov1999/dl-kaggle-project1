@@ -22,8 +22,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--epochs", type=int, default=10)
     parser.add_argument("--batch-size", type=int, default=256)
-    parser.add_argument("--lr", type=float, default=0.1)
-    parser.add_argument("--momentum", type=float, default=0.9)
+    parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--weight-decay", type=float, default=5e-4)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
@@ -35,8 +34,8 @@ def parse_args():
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1 or args.workers < 0 or args.lr <= 0:
         parser.error("epochs, batch-size and lr must be positive; workers cannot be negative")
-    if not 0 <= args.momentum < 1 or args.weight_decay < 0 or args.seed < 0:
-        parser.error("momentum must be in [0, 1); weight-decay and seed cannot be negative")
+    if args.weight_decay < 0 or args.seed < 0:
+        parser.error("weight-decay and seed cannot be negative")
     return args
 
 
@@ -85,7 +84,8 @@ def main():
     )
     model = SmallResNet().to(device)
     params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    assert params <= 5_000_000
+    if params > 5_000_000:
+        raise ValueError(f"Model has {params:,} trainable parameters; the limit is 5,000,000")
     if args.smoke_test:
         x = torch.randn(4, 3, 32, 32, device=device)
         print(f"Device: {device}; parameters: {params:,}; output: {tuple(model(x).shape)}")
@@ -109,7 +109,7 @@ def main():
         "epochs": args.epochs,
         "batch_size": args.batch_size,
         "lr": args.lr,
-        "momentum": args.momentum,
+        "optimizer": "Adam",
         "weight_decay": args.weight_decay,
         "workers": args.workers,
         "seed": args.seed,
@@ -137,13 +137,13 @@ def main():
         "mixed_precision": device.type == "cuda",
     }
     write_json(run_dir / "config.json", config)
-    logger.info("Run: %s | device: %s | parameters: %s", run_dir, device, f"{params:,}")
+    logger.info(
+        "Run: %s | device: %s | optimizer: Adam | lr: %.5g | parameters: %s",
+        run_dir, device, args.lr, f"{params:,}",
+    )
     try:
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.SGD(
-            model.parameters(), lr=args.lr, momentum=args.momentum,
-            weight_decay=args.weight_decay,
-        )
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=args.epochs)
         scaler = torch.amp.GradScaler("cuda", enabled=device.type == "cuda")
         best_acc = -1.0
