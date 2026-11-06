@@ -48,8 +48,8 @@ def main():
     parser.add_argument("--workers", type=int, default=0)
     parser.add_argument("--label-format", choices=("index", "name"), default="index",
                         help="Use CIFAR-10 class indices (0-9) or class names")
-    parser.add_argument("--id-column", default="Id")
-    parser.add_argument("--label-column", default="Label")
+    parser.add_argument("--id-column", default="id")
+    parser.add_argument("--label-column", default="label")
     args = parser.parse_args()
     if args.batch_size < 1 or args.workers < 0:
         parser.error("batch-size must be positive and workers cannot be negative")
