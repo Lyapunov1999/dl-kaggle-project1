@@ -1,4 +1,4 @@
-"""Train SmallResNet on CIFAR-10 and save a separate record for every run."""
+"""Train SmallResNet on train_images/train_labels.csv and record every run."""
 
 import argparse
 import random
@@ -13,7 +13,7 @@ import torch
 import torchvision
 from torch import nn
 
-from data import MEAN, STD, TRAIN_SIZE, VAL_SIZE, make_loaders
+from data import MEAN, STD, make_loaders
 from experiment import ExperimentLog, make_run_dir, write_json
 from model import BLOCKS, WIDTHS, SmallResNet
 
@@ -27,7 +27,8 @@ def parse_args():
     parser.add_argument("--weight-decay", type=float, default=5e-4)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--data-dir", default="./data")
+    parser.add_argument("--images", default="./train_images", help="Directory containing train_XXXXX.png")
+    parser.add_argument("--labels", default="./train_labels.csv", help="CSV with id,label columns")
     parser.add_argument("--runs-dir", default="./runs")
     parser.add_argument("--output", default=None, help="Checkpoint path; default: <run_dir>/best_resnet.pt")
     parser.add_argument("--smoke-test", action="store_true")
@@ -96,6 +97,12 @@ def main():
     experiment = ExperimentLog(run_dir)
     logger = experiment.logger
     started_at = datetime.now(timezone.utc).isoformat()
+    try:
+        train_loader, val_loader = make_loaders(args.images, args.labels, args.batch_size, args.workers, args.seed, device)
+    except Exception:
+        logger.exception("Could not load training data")
+        experiment.close()
+        raise
     config = {
         "started_at_utc": started_at,
         "command": sys.argv,
@@ -106,7 +113,8 @@ def main():
         "weight_decay": args.weight_decay,
         "workers": args.workers,
         "seed": args.seed,
-        "data_dir": str(Path(args.data_dir).resolve()),
+        "images": str(Path(args.images).resolve()),
+        "labels": str(Path(args.labels).resolve()),
         "checkpoint": str(checkpoint.resolve()),
         "device": str(device),
         "gpu": torch.cuda.get_device_name(0) if device.type == "cuda" else None,
@@ -120,7 +128,8 @@ def main():
             "trainable_parameters": params,
         },
         "data": {
-            "dataset": "CIFAR-10", "train_size": TRAIN_SIZE, "val_size": VAL_SIZE,
+            "dataset": "train_images/train_labels.csv", "train_size": len(train_loader.dataset),
+            "val_size": len(val_loader.dataset),
             "split_seed": args.seed, "mean": MEAN, "std": STD,
             "train_augmentation": ["RandomCrop(32, padding=4)", "RandomHorizontalFlip"],
         },
@@ -130,7 +139,6 @@ def main():
     write_json(run_dir / "config.json", config)
     logger.info("Run: %s | device: %s | parameters: %s", run_dir, device, f"{params:,}")
     try:
-        train_loader, val_loader = make_loaders(args.data_dir, args.batch_size, args.workers, args.seed, device)
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(
             model.parameters(), lr=args.lr, momentum=args.momentum,
