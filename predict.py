@@ -15,7 +15,7 @@ from data import MEAN, STD
 from model import SmallResNet
 
 
-DEFAULT_CHECKPOINT = Path("runs/20261106T214241Z_885b2bd2/best_resnet.pt")
+DEFAULT_CHECKPOINT = Path("runs/20261106T225618Z_feb73c44/best_resnet.pt")
 IMAGE_NAME = re.compile(r"test_(\d+)\.png$", re.IGNORECASE)
 CLASS_NAMES = ("airplane", "automobile", "bird", "cat", "deer", "dog", "frog", "horse", "ship", "truck")
 
