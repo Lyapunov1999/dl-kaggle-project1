@@ -10,6 +10,25 @@ WIDTHS = (64, 128, 256)
 BLOCKS = (3, 3, 3)
 
 
+# class BasicBlock(nn.Module):
+#     def __init__(self, in_channels, out_channels, stride=1):
+#         super().__init__()
+#         self.conv1 = nn.Conv2d(in_channels, out_channels, 3, stride, 1, bias=False)
+#         self.bn1 = nn.BatchNorm2d(out_channels)
+#         self.conv2 = nn.Conv2d(out_channels, out_channels, 3, 1, 1, bias=False)
+#         self.bn2 = nn.BatchNorm2d(out_channels)
+#         self.shortcut = (
+#             nn.Identity() if stride == 1 and in_channels == out_channels else
+#             nn.Sequential(nn.Conv2d(in_channels, out_channels, 1, stride, bias=False),
+#                           nn.BatchNorm2d(out_channels))
+#         )
+#         self.relu = nn.ReLU(inplace=True)
+
+#     def forward(self, x):
+#         out = self.relu(self.bn1(self.conv1(x)))
+#         return self.relu(self.bn2(self.conv2(out)) + self.shortcut(x))
+
+# kepp the main branch and edit the shortcut branch
 class BasicBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super().__init__()

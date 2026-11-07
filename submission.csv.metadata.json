@@ -1,11 +1,11 @@
 {
   "checkpoint": {
-    "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T032846Z_095cea8c\\best_resnet.pt",
-    "sha256": "4179e94c1dff65615c04bfb4425f496aefe52d980053aaee22aba61fc31e3f13",
-    "epoch": 99,
+    "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T035051Z_4898d629\\best_resnet.pt",
+    "sha256": "ab1010c823c79716a10d14d07b2fad6be4175b68f74187eb5f875a2a31eb5cc3",
+    "epoch": 91,
     "val_acc": 0.9332,
     "config": {
-      "started_at_utc": "2026-11-07T03:28:46.548114+00:00",
+      "started_at_utc": "2026-11-07T03:50:51.215113+00:00",
       "command": [
         "train.py",
         "--epochs",
@@ -26,7 +26,7 @@
       "seed": 42,
       "images": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\train_images",
       "labels": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\train_labels.csv",
-      "checkpoint": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T032846Z_095cea8c\\best_resnet.pt",
+      "checkpoint": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T035051Z_4898d629\\best_resnet.pt",
       "device": "cuda",
       "gpu": "NVIDIA GeForce RTX 5080 Laptop GPU",
       "torch_version": "2.11.0+cu128",
@@ -81,7 +81,7 @@
         ],
         "labels_sha256": "b596f4cbb12107ecac987e3a61123af40408a6bb83719a1dbb5cc3ce70968e93",
         "samples_sha256": "ed62919c963e7f67e7310784afd9726460814fc4f5a2794aff79da4b2375d5cb",
-        "split_manifest": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T032846Z_095cea8c\\split.json",
+        "split_manifest": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T035051Z_4898d629\\split.json",
         "split_sha256": "2e5cb0fb632dfe10afb2d8e65d2c364c8ad79ca68d7f26ec26ed3234079cd994",
         "train_class_counts": [
           4512,
@@ -114,7 +114,7 @@
   },
   "submission": {
     "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\submission.csv",
-    "sha256": "a04333e058b874b1c07f318bd6624b334f3b16206f34d7e4c9f386627eb3566c"
+    "sha256": "5319e193e1b551411157493abb3e0df0d442e2b9e8e5d6cf95b6b37434b4ded2"
   },
   "sample_submission": {
     "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\sample_submission.csv",
