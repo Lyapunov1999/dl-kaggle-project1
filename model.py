@@ -48,27 +48,92 @@ BLOCKS = (3, 3, 3)
 #         return self.relu(self.bn2(self.conv2(out)) + self.shortcut(x))
 
 
-# edit both branches
+# # edit both branches
+# class BasicBlock(nn.Module):
+#     def __init__(self, in_channels, out_channels, stride=1):
+#         super().__init__()
+
+#         # Main branch
+#         # First convolution: extract features at original resolution
+#         self.conv1 = nn.Conv2d(
+#             in_channels, out_channels, 3, 1, 1, bias=False
+#         )
+#         self.bn1 = nn.BatchNorm2d(out_channels)
+
+#         # Second convolution: perform downsampling
+#         self.conv2 = nn.Conv2d(
+#             out_channels, out_channels, 3, stride, 1, bias=False
+#         )
+#         self.bn2 = nn.BatchNorm2d(out_channels)
+
+#         # Shortcut branch
+#         if stride == 1 and in_channels == out_channels:
+#             self.shortcut = nn.Identity()
+#         elif stride == 2:
+#             self.shortcut = nn.Sequential(
+#                 nn.AvgPool2d(kernel_size=2, stride=2),
+#                 nn.Conv2d(
+#                     in_channels, out_channels, 1, 1, bias=False
+#                 ),
+#                 nn.BatchNorm2d(out_channels)
+#             )
+#         else:
+#             self.shortcut = nn.Sequential(
+#                 nn.Conv2d(
+#                     in_channels, out_channels, 1, stride, bias=False
+#                 ),
+#                 nn.BatchNorm2d(out_channels)
+#             )
+
+#         self.relu = nn.ReLU(inplace=True)
+
+#     def forward(self, x):
+#         out = self.relu(self.bn1(self.conv1(x)))
+#         out = self.bn2(self.conv2(out))
+#         return self.relu(out + self.shortcut(x))
+
+# try SE attention
+class SEBlock(nn.Module):
+    def __init__(self, channels, reduction=16):
+        super().__init__()
+
+        hidden = max(channels // reduction, 8)
+
+        self.attention = nn.Sequential(
+            nn.AdaptiveAvgPool2d(1),
+            nn.Conv2d(channels, hidden, kernel_size=1),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(hidden, channels, kernel_size=1),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        weights = self.attention(x)
+        return x * weights
+
+
 class BasicBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super().__init__()
 
         # Main branch
-        # First convolution: extract features at original resolution
         self.conv1 = nn.Conv2d(
             in_channels, out_channels, 3, 1, 1, bias=False
         )
         self.bn1 = nn.BatchNorm2d(out_channels)
 
-        # Second convolution: perform downsampling
         self.conv2 = nn.Conv2d(
             out_channels, out_channels, 3, stride, 1, bias=False
         )
         self.bn2 = nn.BatchNorm2d(out_channels)
 
+        # SE Attention
+        self.se = SEBlock(out_channels, reduction=16)
+
         # Shortcut branch
         if stride == 1 and in_channels == out_channels:
             self.shortcut = nn.Identity()
+
         elif stride == 2:
             self.shortcut = nn.Sequential(
                 nn.AvgPool2d(kernel_size=2, stride=2),
@@ -77,6 +142,7 @@ class BasicBlock(nn.Module):
                 ),
                 nn.BatchNorm2d(out_channels)
             )
+
         else:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(
@@ -88,10 +154,16 @@ class BasicBlock(nn.Module):
         self.relu = nn.ReLU(inplace=True)
 
     def forward(self, x):
+        identity = self.shortcut(x)
+
         out = self.relu(self.bn1(self.conv1(x)))
         out = self.bn2(self.conv2(out))
-        return self.relu(out + self.shortcut(x))
 
+        # Channel attention before residual addition
+        out = self.se(out)
+
+        out = self.relu(out + identity)
+        return out
 
 class SmallResNet(nn.Module):
     def __init__(self, widths=WIDTHS, blocks=BLOCKS):
