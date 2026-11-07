@@ -1,24 +1,24 @@
 {
   "checkpoint": {
-    "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T041125Z_f9d14f15\\best_resnet.pt",
-    "sha256": "37c245d39a62eb3c6cb942abf7dba2f25062bd9838ba75ad0b3fcbbf20129cf5",
-    "epoch": 182,
-    "val_acc": 0.9356,
+    "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T044312Z_47e70df5\\best_resnet.pt",
+    "sha256": "9946a9d3dea834d0669198ad2676c2b91431b3244e0b2cf6f75ca77f120b037e",
+    "epoch": 64,
+    "val_acc": 0.9212,
     "config": {
-      "started_at_utc": "2026-11-07T04:11:25.069286+00:00",
+      "started_at_utc": "2026-11-07T04:43:12.757278+00:00",
       "command": [
         "train.py",
         "--epochs",
-        "200",
+        "100",
         "--batch-size",
-        "256",
+        "512",
         "--lr",
         "0.001",
         "--workers",
         "4"
       ],
-      "epochs": 200,
-      "batch_size": 256,
+      "epochs": 100,
+      "batch_size": 512,
       "lr": 0.001,
       "optimizer": "Adam",
       "weight_decay": 0.0005,
@@ -26,7 +26,7 @@
       "seed": 42,
       "images": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\train_images",
       "labels": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\train_labels.csv",
-      "checkpoint": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T041125Z_f9d14f15\\best_resnet.pt",
+      "checkpoint": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T044312Z_47e70df5\\best_resnet.pt",
       "device": "cuda",
       "gpu": "NVIDIA GeForce RTX 5080 Laptop GPU",
       "torch_version": "2.11.0+cu128",
@@ -46,7 +46,7 @@
           3,
           3
         ],
-        "trainable_parameters": 4327754
+        "trainable_parameters": 4362986
       },
       "data": {
         "dataset": "PNG images and original training CSV",
@@ -81,7 +81,7 @@
         ],
         "labels_sha256": "b596f4cbb12107ecac987e3a61123af40408a6bb83719a1dbb5cc3ce70968e93",
         "samples_sha256": "ed62919c963e7f67e7310784afd9726460814fc4f5a2794aff79da4b2375d5cb",
-        "split_manifest": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T041125Z_f9d14f15\\split.json",
+        "split_manifest": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T044312Z_47e70df5\\split.json",
         "split_sha256": "2e5cb0fb632dfe10afb2d8e65d2c364c8ad79ca68d7f26ec26ed3234079cd994",
         "train_class_counts": [
           4512,
@@ -114,7 +114,7 @@
   },
   "submission": {
     "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\submission.csv",
-    "sha256": "3381df6bda3e16c6d239938085d8f501b4a815ff11f65264d56cf02e22413211"
+    "sha256": "bd0681c5936e1b8f678518497121b3fc48be0a93484766fe59e798516e783e42"
   },
   "sample_submission": {
     "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\sample_submission.csv",
