@@ -1,9 +1,9 @@
 {
   "checkpoint": {
-    "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T035051Z_4898d629\\best_resnet.pt",
-    "sha256": "ab1010c823c79716a10d14d07b2fad6be4175b68f74187eb5f875a2a31eb5cc3",
-    "epoch": 91,
-    "val_acc": 0.9332,
+    "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\runs\\20261107T035051Z_4898d629\\resnet_epoch_070.pt",
+    "sha256": "213fa173ec48fe8335cce85ec684d272130a662cb8ef4acf478a53f917941665",
+    "epoch": 70,
+    "val_acc": 0.9124,
     "config": {
       "started_at_utc": "2026-11-07T03:50:51.215113+00:00",
       "command": [
@@ -114,7 +114,7 @@
   },
   "submission": {
     "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\submission.csv",
-    "sha256": "5319e193e1b551411157493abb3e0df0d442e2b9e8e5d6cf95b6b37434b4ded2"
+    "sha256": "1684132e81ef49dd48befbf477a0933e0745d1d96acbc6d51c68183f5c31d339"
   },
   "sample_submission": {
     "path": "C:\\Users\\peter\\OneDrive\\Documents\\code\\dl-kaggle-project1\\sample_submission.csv",
