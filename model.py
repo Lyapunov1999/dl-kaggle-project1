@@ -3,8 +3,11 @@
 import torch
 from torch import nn
 
-WIDTHS = (48, 96, 192, 320)  # 4,947,770 trainable parameters, below the 5M limit.
-BLOCKS = (2, 2, 2, 2)
+# WIDTHS = (48, 96, 192, 320)  # 4,947,770 trainable parameters, below the 5M limit.
+# BLOCKS = (2, 2, 2, 2)
+
+WIDTHS = (64, 128, 256)
+BLOCKS = (3, 3, 3)
 
 
 class BasicBlock(nn.Module):
