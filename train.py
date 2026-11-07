@@ -1,6 +1,7 @@
 """Train SmallResNet on train_images/train_labels.csv and record every run."""
 
 import argparse
+import hashlib
 import random
 import sys
 import time
@@ -13,7 +14,7 @@ import torch
 import torchvision
 from torch import nn
 
-from data import MEAN, STD, make_loaders
+from data import CLASS_NAMES, MEAN, STD, LabeledImages, make_loaders
 from experiment import ExperimentLog, make_run_dir, write_json
 from model import BLOCKS, WIDTHS, SmallResNet
 
@@ -27,7 +28,7 @@ def parse_args():
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--images", default="./train_images", help="Directory containing train_XXXXX.png")
-    parser.add_argument("--labels", default="./train_labels.csv", help="CSV with id,label columns")
+    parser.add_argument("--labels", default="./train_labels.csv", help="Original CSV with id,filename,label columns (id,label also supported)")
     parser.add_argument("--runs-dir", default="./runs")
     parser.add_argument("--output", default=None, help="Checkpoint path; default: <run_dir>/best_resnet.pt")
     parser.add_argument("--smoke-test", action="store_true")
@@ -70,6 +71,36 @@ def train_epoch(model, loader, device, criterion, optimizer, scaler):
     return loss_sum / total, correct / total
 
 
+def record_split(run_dir, train_loader, val_loader, seed):
+    """Record the actual IDs used, together with the exact source CSV hash."""
+    train_subset, val_subset = train_loader.dataset, val_loader.dataset
+    train_full = getattr(train_subset, "dataset", None)
+    val_full = getattr(val_subset, "dataset", None)
+    if not isinstance(train_full, LabeledImages) or not isinstance(val_full, LabeledImages):
+        return {}  # Custom loaders, including the training-loop unit test.
+    train_ids = [train_full.ids[index] for index in train_subset.indices]
+    val_ids = [val_full.ids[index] for index in val_subset.indices]
+    if set(train_ids) & set(val_ids) or train_full.samples_sha256 != val_full.samples_sha256:
+        raise ValueError("Train/validation split overlaps or uses inconsistent sample mappings")
+    manifest = {
+        "seed": seed,
+        "labels_sha256": train_full.labels_sha256,
+        "samples_sha256": train_full.samples_sha256,
+        "train_ids": train_ids,
+        "val_ids": val_ids,
+    }
+    path = run_dir / "split.json"
+    write_json(path, manifest)
+    return {
+        "labels_sha256": train_full.labels_sha256,
+        "samples_sha256": train_full.samples_sha256,
+        "split_manifest": str(path.resolve()),
+        "split_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "train_class_counts": [sum(train_full.samples[index][1] == label for index in train_subset.indices) for label in range(10)],
+        "val_class_counts": [sum(val_full.samples[index][1] == label for index in val_subset.indices) for label in range(10)],
+    }
+
+
 def main():
     args = parse_args()
     random.seed(args.seed)
@@ -93,12 +124,15 @@ def main():
 
     run_dir = make_run_dir(args.runs_dir)
     checkpoint = Path(args.output) if args.output else run_dir / "best_resnet.pt"
+    if checkpoint.resolve() == Path(args.labels).resolve() or checkpoint.suffix.lower() not in (".pt", ".pth"):
+        raise ValueError("Checkpoint output must be a .pt/.pth file and cannot overwrite the labels CSV")
     checkpoint.parent.mkdir(parents=True, exist_ok=True)
     experiment = ExperimentLog(run_dir)
     logger = experiment.logger
     started_at = datetime.now(timezone.utc).isoformat()
     try:
         train_loader, val_loader = make_loaders(args.images, args.labels, args.batch_size, args.workers, args.seed, device)
+        split_metadata = record_split(run_dir, train_loader, val_loader, args.seed)
     except Exception:
         logger.exception("Could not load training data")
         experiment.close()
@@ -128,10 +162,12 @@ def main():
             "trainable_parameters": params,
         },
         "data": {
-            "dataset": "train_images/train_labels.csv", "train_size": len(train_loader.dataset),
+            "dataset": "PNG images and original training CSV", "train_size": len(train_loader.dataset),
             "val_size": len(val_loader.dataset),
             "split_seed": args.seed, "mean": MEAN, "std": STD,
+            "class_names": CLASS_NAMES,
             "train_augmentation": ["RandomCrop(32, padding=4)", "RandomHorizontalFlip"],
+            **split_metadata,
         },
         "scheduler": "CosineAnnealingLR",
         "mixed_precision": device.type == "cuda",
@@ -141,6 +177,10 @@ def main():
         "Run: %s | device: %s | optimizer: Adam | lr: %.5g | parameters: %s",
         run_dir, device, args.lr, f"{params:,}",
     )
+    if split_metadata:
+        logger.info("Labels SHA256: %s | train: %d | validation: %d | split: %s",
+                    split_metadata["labels_sha256"], len(train_loader.dataset), len(val_loader.dataset),
+                    split_metadata["split_manifest"])
     try:
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
@@ -186,6 +226,9 @@ def main():
             "best_val_acc": best_acc,
             "best_epoch": best_epoch,
             "checkpoint": str(checkpoint.resolve()),
+            "checkpoint_sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
+            "labels_sha256": split_metadata.get("labels_sha256"),
+            "split_sha256": split_metadata.get("split_sha256"),
         }
         write_json(run_dir / "summary.json", summary)
         logger.info("Best validation accuracy: %.4f at epoch %d; checkpoint: %s", best_acc, best_epoch, checkpoint)
